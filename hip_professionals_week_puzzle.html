@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIP Professionals Week Puzzle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-mid: #5DCAA5;
+    --teal-dark: #085041;
+    --blue: #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark: #0C447C;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --gray-50: #F7F6F2;
+    --gray-100: #EEECE6;
+    --gray-200: #D3D1C7;
+    --gray-600: #5F5E5A;
+    --gray-800: #2C2C2A;
+    --text: #1a1a18;
+    --text-muted: #5F5E5A;
+    --border: rgba(0,0,0,0.1);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: var(--teal-dark);
+    color: white;
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal-mid);
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+
+  header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.7);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--gray-100);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: white;
+    color: var(--teal-dark);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .tab:hover:not(.active) { background: rgba(255,255,255,0.5); }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ---- WORD SEARCH ---- */
+  .ws-wrap { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .ws-grid { display: inline-grid; gap: 3px; margin-bottom: 1.25rem; }
+  .ws-cell {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-100);
+    transition: background 0.1s, transform 0.1s;
+  }
+  .ws-cell:hover { background: var(--blue-light); }
+  .ws-cell.selected { background: var(--blue-light); color: var(--blue-dark); border-color: var(--blue); transform: scale(1.05); }
+  .ws-cell.found { background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal-mid); }
+
+  .word-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .word-chip {
+    font-size: 12px; font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    color: var(--text-muted);
+    background: var(--gray-50);
+    transition: all 0.2s;
+  }
+  .word-chip.found {
+    text-decoration: line-through;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    border-color: var(--teal-mid);
+  }
+
+  .ws-instructions {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .ws-score {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--teal-dark);
+    margin-top: 10px;
+    min-height: 22px;
+  }
+
+  /* ---- SCRAMBLE ---- */
+  .scramble-list { display: flex; flex-direction: column; gap: 12px; }
+  .scramble-item {
+    background: white;
+    border: 1px solid var(--gray-100);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    transition: box-shadow 0.2s;
+  }
+  .scramble-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .scramble-item .num { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .scrambled-word { font-family: 'DM Serif Display', serif; font-size: 26px; letter-spacing: 6px; color: var(--text); margin-bottom: 6px; }
+  .hint { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-style: italic; }
+  .scramble-input {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .scramble-input:focus { border-color: var(--teal); }
+  .scramble-input.correct { border-color: var(--teal); background: var(--teal-light); }
+  .scramble-result { font-size: 12px; font-weight: 500; margin-top: 6px; min-height: 18px; }
+  .correct-msg { color: var(--teal-dark); }
+  .incorrect-msg { color: var(--coral); }
+
+  /* ---- CROSSWORD ---- */
+  .cw-wrap { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .cw-container { display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start; }
+  .cw-grid-wrap { flex-shrink: 0; }
+  .cw-grid { display: inline-grid; gap: 2px; background: var(--gray-200); border: 2px solid var(--gray-200); border-radius: 4px; overflow: hidden; }
+  .cw-cell { width: 34px; height: 34px; background: white; position: relative; }
+  .cw-cell.black { background: var(--gray-800); }
+  .cw-cell input {
+    width: 100%; height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .cw-cell input:focus { background: var(--blue-light); }
+  .cw-cell input.correct-cell { background: var(--teal-light); color: var(--teal-dark); }
+  .cw-num { position: absolute; top: 2px; left: 2px; font-size: 7px; font-weight: 600; color: var(--text-muted); pointer-events: none; line-height: 1; }
+
+  .clues { flex: 1; min-width: 200px; }
+  .clue-group { margin-bottom: 1.25rem; }
+  .clue-group-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .clue-item { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+  .clue-item b { color: var(--text); font-weight: 600; }
+
+  .check-btn {
+    margin-top: 1rem;
+    padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--teal);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--teal-dark);
+    transition: all 0.2s;
+  }
+  .check-btn:hover { background: var(--teal-light); }
+  .score-msg { font-size: 13px; font-weight: 500; margin-top: 10px; min-height: 20px; color: var(--teal-dark); }
+
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .section-badge {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    letter-spacing: 0.05em;
+  }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 2rem;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  @media (max-width: 500px) {
+    .ws-cell { width: 26px; height: 26px; font-size: 11px; }
+    .cw-cell { width: 28px; height: 28px; }
+    .cw-cell input { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Celebrate &amp; Engage</div>
+  <h1>HIP Professionals Week<br>Puzzle Challenge</h1>
+  <p>Three fun puzzles celebrating the people who keep our health plans running. How many can you solve?</p>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('ws')">Word Search</button>
+    <button class="tab" onclick="switchTab('sc')">Word Scramble</button>
+    <button class="tab" onclick="switchTab('cw')">Mini Crossword</button>
+  </div>
+
+  <!-- WORD SEARCH -->
+  <div class="section active" id="ws">
+    <div class="section-header">
+      <span class="section-badge">Puzzle 1</span>
+      <span class="section-title">Word Search</span>
+    </div>
+    <div class="ws-wrap">
+      <div class="ws-grid" id="wsGrid" style="grid-template-columns: repeat(12, 32px);"></div>
+      <div class="word-list" id="wordList"></div>
+      <div class="ws-score" id="wsScore"></div>
+      <div class="ws-instructions">Click the first letter of a word, then click the last letter to mark it found. Words run across, down, and diagonally.</div>
+    </div>
+  </div>
+
+  <!-- SCRAMBLE -->
+  <div class="section" id="sc">
+    <div class="section-header">
+      <span class="section-badge">Puzzle 2</span>
+      <span class="section-title">Word Scramble</span>
+    </div>
+    <div class="scramble-list" id="scrambleList"></div>
+  </div>
+
+  <!-- CROSSWORD -->
+  <div class="section" id="cw">
+    <div class="section-header">
+      <span class="section-badge">Puzzle 3</span>
+      <span class="section-title">Mini Crossword</span>
+    </div>
+    <div class="cw-wrap">
+      <div class="cw-container">
+        <div class="cw-grid-wrap">
+          <div class="cw-grid" id="cwGrid" style="grid-template-columns: repeat(7, 34px);"></div>
+          <button class="check-btn" onclick="checkCrossword()">Check my answers</button>
+          <div class="score-msg" id="cwScore"></div>
+        </div>
+        <div class="clues">
+          <div class="clue-group">
+            <div class="clue-group-label">Across</div>
+            <div id="acrossClues"></div>
+          </div>
+          <div class="clue-group">
+            <div class="clue-group-label">Down</div>
+            <div id="downClues"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Created for HIP Professionals Week &nbsp;·&nbsp; Share &amp; enjoy!
+</footer>
+
+<script>
+// ===== TAB SWITCHING =====
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['ws','sc','cw'][i]===id));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id===id));
+}
+
+// ===== WORD SEARCH =====
+const WORDS = ['HEALTH','INSURANCE','BENEFITS','NETWORK','COVERAGE','WELLNESS','MEMBER','PLAN','CLAIM','HIP','CARE','PROVIDER'];
+const COLS = 12, ROWS = 12;
+let grid = Array.from({length:ROWS}, ()=>Array(COLS).fill(''));
+let placed = {};
+
+function placeWord(word) {
+  const dirs = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  for(let attempt=0;attempt<300;attempt++){
+    const [dr,dc] = dirs[Math.floor(Math.random()*dirs.length)];
+    const r = Math.floor(Math.random()*ROWS), c = Math.floor(Math.random()*COLS);
+    let ok=true, cells=[];
+    for(let i=0;i<word.length;i++){
+      const nr=r+dr*i, nc=c+dc*i;
+      if(nr<0||nr>=ROWS||nc<0||nc>=COLS){ok=false;break;}
+      if(grid[nr][nc]&&grid[nr][nc]!==word[i]){ok=false;break;}
+      cells.push([nr,nc]);
+    }
+    if(ok){cells.forEach(([nr,nc],i)=>grid[nr][nc]=word[i]);placed[word]=cells;return true;}
+  }
+  return false;
+}
+WORDS.forEach(w=>placeWord(w));
+const alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(!grid[r][c]) grid[r][c]=alpha[Math.floor(Math.random()*26)];
+
+let wsStart=null, foundWords=new Set();
+
+function isFoundCell(r,c){
+  for(const w of foundWords) if(placed[w]&&placed[w].some(([pr,pc])=>pr===r&&pc===c)) return true;
+  return false;
+}
+
+function renderWS(){
+  const g=document.getElementById('wsGrid'); g.innerHTML='';
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const d=document.createElement('div');
+    d.className='ws-cell'+(isFoundCell(r,c)?' found':'');
+    d.textContent=grid[r][c]; d.dataset.r=r; d.dataset.c=c;
+    d.onclick=()=>wsClick(r,c);
+    g.appendChild(d);
+  }
+  document.getElementById('wordList').innerHTML=WORDS.map(w=>`<span class="word-chip${foundWords.has(w)?' found':''}">${w}</span>`).join('');
+  const s=document.getElementById('wsScore');
+  if(foundWords.size===WORDS.length) s.textContent='🎉 You found all '+WORDS.length+' words!';
+  else if(foundWords.size>0) s.textContent=foundWords.size+' of '+WORDS.length+' words found';
+  else s.textContent='';
+}
+
+function wsClick(r,c){
+  if(!wsStart){
+    wsStart=[r,c];
+    document.querySelectorAll('.ws-cell').forEach(d=>{
+      if(+d.dataset.r===r&&+d.dataset.c===c) d.classList.add('selected');
+    });
+    return;
+  }
+  const [sr,sc]=wsStart; wsStart=null;
+  document.querySelectorAll('.ws-cell.selected').forEach(d=>d.classList.remove('selected'));
+  for(const word of WORDS){
+    if(foundWords.has(word)) continue;
+    const cells=placed[word]; if(!cells) continue;
+    const first=cells[0], last=cells[cells.length-1];
+    if((first[0]===sr&&first[1]===sc&&last[0]===r&&last[1]===c)||(last[0]===sr&&last[1]===sc&&first[0]===r&&first[1]===c)){
+      foundWords.add(word); break;
+    }
+  }
+  renderWS();
+}
+renderWS();
+
+// ===== SCRAMBLE =====
+const scrambleWords=[
+  {word:'COVERAGE',hint:'What your plan provides for medical costs'},
+  {word:'WELLNESS',hint:'A focus area for HIP professionals'},
+  {word:'BENEFITS',hint:'Perks included in your health plan'},
+  {word:'NETWORK',hint:'Your approved group of providers'},
+  {word:'DEDUCTIBLE',hint:'Amount you pay before insurance kicks in'},
+  {word:'MEMBER',hint:'You — as part of the plan'},
+];
+function scramble(w){
+  const a=w.split('');
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a.join('')===w?scramble(w):a.join('');
+}
+function renderScramble(){
+  document.getElementById('scrambleList').innerHTML=scrambleWords.map((item,i)=>`
+    <div class="scramble-item">
+      <div class="num">Word ${i+1} of ${scrambleWords.length}</div>
+      <div class="scrambled-word">${scramble(item.word)}</div>
+      <div class="hint">${item.hint}</div>
+      <input class="scramble-input" type="text" placeholder="Type your answer..." oninput="checkScramble(this,${i})" autocomplete="off" spellcheck="false" />
+      <div class="scramble-result" id="scr${i}"></div>
+    </div>`).join('');
+}
+function checkScramble(el,i){
+  const res=document.getElementById('scr'+i);
+  const val=el.value.trim().toUpperCase();
+  if(val===scrambleWords[i].word){
+    res.className='scramble-result correct-msg'; res.textContent='Correct!';
+    el.classList.add('correct');
+  } else if(val.length===scrambleWords[i].word.length){
+    res.className='scramble-result incorrect-msg'; res.textContent='Not quite — keep trying!';
+    el.classList.remove('correct');
+  } else {
+    res.textContent=''; el.classList.remove('correct');
+  }
+}
+renderScramble();
+
+// ===== CROSSWORD =====
+const CW_SIZE=7;
+const cwLayout=[
+  ['H','E','A','L','T','H','#'],
+  ['I','#','#','#','#','I','#'],
+  ['P','L','A','N','#','P','#'],
+  ['#','#','#','E','#','#','#'],
+  ['C','A','R','E','#','W','#'],
+  ['#','#','#','#','#','E','#'],
+  ['#','#','#','#','#','L','#'],
+];
+const cwClues={
+  across:[
+    {num:1,clue:'General wellbeing — mind and body',row:0,col:0,len:6},
+    {num:4,clue:'A blueprint for your coverage',row:2,col:1,len:4},
+    {num:5,clue:'What providers deliver to patients',row:4,col:0,len:4},
+  ],
+  down:[
+    {num:1,clue:'HIP stands for Health Insurance ___',row:0,col:0,len:3},
+    {num:2,clue:'Good for mind, body & soul (synonym of 1 across)',row:0,col:5,len:7},
+    {num:3,clue:'Network node — like an acorn to a tree',row:2,col:3,len:3},
+  ]
+};
+
+function renderCW(){
+  const g=document.getElementById('cwGrid'); g.innerHTML='';
+  const numMap={};
+  [...cwClues.across,...cwClues.down].forEach(c=>{
+    const k=c.row+','+c.col;
+    numMap[k]=(numMap[k]||[]).concat(c.num);
+  });
+  for(let r=0;r<CW_SIZE;r++) for(let c=0;c<CW_SIZE;c++){
+    const d=document.createElement('div');
+    d.className='cw-cell'+(cwLayout[r][c]==='#'?' black':'');
+    if(cwLayout[r][c]!=='#'){
+      const k=r+','+c;
+      if(numMap[k]){const n=document.createElement('div');n.className='cw-num';n.textContent=numMap[k][0];d.appendChild(n);}
+      const inp=document.createElement('input');
+      inp.maxLength=1; inp.dataset.r=r; inp.dataset.c=c;
+      inp.setAttribute('aria-label','Row '+(r+1)+' column '+(c+1));
+      d.appendChild(inp);
+    }
+    g.appendChild(d);
+  }
+  document.getElementById('acrossClues').innerHTML=cwClues.across.map(c=>`<div class="clue-item"><b>${c.num}A.</b> ${c.clue}</div>`).join('');
+  document.getElementById('downClues').innerHTML=cwClues.down.map(c=>`<div class="clue-item"><b>${c.num}D.</b> ${c.clue}</div>`).join('');
+}
+
+function checkCrossword(){
+  let correct=0,total=0;
+  document.querySelectorAll('.cw-cell input').forEach(inp=>{
+    const r=+inp.dataset.r, c=+inp.dataset.c;
+    if(cwLayout[r][c]!=='#'){
+      total++;
+      if(inp.value.toUpperCase()===cwLayout[r][c]){correct++;inp.classList.add('correct-cell');}
+      else inp.classList.remove('correct-cell');
+    }
+  });
+  const msg=document.getElementById('cwScore');
+  if(correct===total) msg.textContent='Perfect score! Every letter correct!';
+  else msg.textContent=correct+' of '+total+' letters correct. Keep going!';
+}
+renderCW();
+</script>
+</body>
+</html>
